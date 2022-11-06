@@ -1,7 +1,57 @@
 
-## Description
+# bam-to-ychr-calls
 
-This code performs variant calling with [BCFtools](https://samtools.github.io/bcftools/) from a .bam genome in hg19 coordinates, keeping the ancestral positions. Then it annotates the vcf using the YLeaf and Ybrowse lists of annotated SNPs in hg38 coordinates. The change of coordinate is done with [pyliftover](https://pypi.org/project/pyliftover/). The result is a .csv with annotated SNPs sorted by Phred quality score.
+This application takes a .bam input in hg19 coordinates and yields a .csv with the variants annotated by SNP name, regions relevant for phylogeny and potential aDNA damages in hg38 coordinates.
+
+## Table of contents
+* [Requirements](#requirements)
+* [Description](#description)
+  * [Variant calling](#variant-calling)
+  * [SNP annotation](#snp-annotation)
+  * [Anciend DNA damage](#ancient-dna-damage)
+  * [Suitable regions for phylogeny](#suitable-regions-for-phylogeny)
+* [Setup (Debian/Ubuntu)](#setup-debianubuntu)
+   * [Installing SAMtools and BCFtools](#installing-samtools-and-bcftools)
+      * [Update, upgrade and install dependencies](#update-upgrade-and-install-dependencies)
+      * [Install SAMtools](#install-samtools)
+      * [Install BCFtools](#install-bcftools)
+    * [Installing the repository](#installing-the-repository)
+       * [Clone this repository](#clone-this-repository)
+       * [Move to the repository directory and create the necessary folders](#move-to-the-repository-directory-and-create-the-necessary-folders)
+       * [Download the SNP annotations](#download-the-snp-annotations)
+       * [Download the humanG1Kv37 reference and unzip it](#download-the-humang1kv37-reference-and-unzip-it)
+       * [Download the genome](#download-the-genome)
+       * [Create a Python virtual environment (optional) and install the dependencies](#create-a-python-virtual-environment-optional-and-install-the-dependencies)
+       * [Giving execute permissions and executing the bash script](#giving-execute-permissions-and-executing-the-bash-script)
+       * [Run the Python script](#run-the-python-script)
+* [References](#references)
+
+## Technologies used
+
+- Debian GNU/Linux 11 
+- Python 3.9.2 
+- SAMtools 1.16.1
+- BCFtools 1.16
+
+Also check the [dependencies](#update-upgrade-and-install-dependencies) and the requirements.txt.
+## Description
+### Variant calling
+
+Variant calling is performed using [BCFtools](https://samtools.github.io/bcftools/), keeping the positions with the ancestral genotype. The .csv output is sorted by the [Phred quality score](https://gatk.broadinstitute.org/hc/en-us/articles/360035531872-Phred-scaled-quality-scores).
+
+### SNP annotation
+
+For the SNP annotation [YLeaf](https://github.com/genid/Yleaf) and [Ybrowse](http://ybrowse.org/gbrowse2/gff/) lists of annotated SNPs in hg38 coordinates are used. First we annotate the list of positions called from the sample against the YLeaf list and then we add the Ybrowse annotated positions that are in the sample but not in Yleaf file, giving thus priority to Yleaf annotations.
+
+ The change of coordinates is done with [pyliftover](https://pypi.org/project/pyliftover/).
+
+### Ancient DNA damage
+
+We also annotate the following substitutions prone to aDNA damage due to deamination of cytosines [1]:
+- C to T
+- G to A
+
+### Suitable regions for phylogeny
 
 In the process we annotate the regions not suitable for phylogeny [as per YSEQ](https://www.yseq.net/product_info.php?products_id=108&osCsid=a46df681c44538157cf8939e4aeef532):
 
@@ -11,16 +61,10 @@ In the process we annotate the regions not suitable for phylogeny [as per YSEQ](
 - **Post Palindromic Region**: chrY:26637971..26673210 
 - **Pseudo Autosomal Region 2**, (PAR2): chrY:56887903..57217415
 
-It also annotates mutations prone to aDNA damage ["C to T", "A to T", "G to C", "A to G"]
 
-## Requirements
+## Setup (Debian/Ubuntu):
 
-SAMtools  
-BCFtools
-
-## Setup
-
-The following installation has been tested in Debian GNU/Linux 11.
+The following installation has been carried out with **Debian GNU/Linux 11**.
 
 ## Installing SAMtools and BCFtools:
 You may want to check this useful links: [link1](https://www.biostars.org/p/328831/) and [link2](https://www.biostars.org/p/328831/).
@@ -35,8 +79,9 @@ sudo apt-get install gcc
 sudo apt-get install make
 sudo apt-get install libncurses5-dev
 sudo apt-get install liblzma-dev
+sudo apt-get install zlib1g-dev
 sudo apt-get install libbz2-dev
-apt-get install libcurl4-openssl-dev
+sudo apt-get install libcurl4-openssl-dev
 ```
 ### Install SAMtools:
 
@@ -72,9 +117,9 @@ git clone https://github.com/fj-blanco/bam-to-ychr-calls
 ### Move to the repository directory and create the necessary folders:
 ```
 cd bam-to-ychr-calls
-sudo mkdir ./genomes/
-sudo mkdir ./SNP_annotations_hg_38/
-sudo mkdir ./references/
+mkdir ./genomes/
+mkdir ./SNP_annotations_hg38/
+mkdir ./references/
 ```
 
 ### Download the SNP annotations:
@@ -110,3 +155,6 @@ chmod +x bam_to_vcf.sh
 ```
 python3 ./vcf_processing.py
 ```
+
+# References
+[1] Briggs, A.W., Stenzel, U., Johnson, P.L., Green, R.E., Kelso, J., Prüfer, K., Meyer, M., Krause, J., Ronan, M.T., Lachmann, M. and Pääbo, S., 2007. Patterns of damage in genomic DNA sequences from a Neandertal. *Proceedings of the National Academy of Sciences, 104(37)*, pp.14616-14621.

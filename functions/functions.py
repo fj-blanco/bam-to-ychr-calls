@@ -8,9 +8,6 @@ dyz19 = [20054914,20351054]
 ppr = [26637971,26673210]
 par2 = [56887903,57217415]
 
-# mutations to annotate:
-mutations_to_annotate = ["C to T", "A to T", "G to C", "A to G"]
-
 def check_region(position):
     if (par1[0] <= position <= par1[1]):
         i_reg = 'par1'
@@ -25,14 +22,11 @@ def check_region(position):
     else:
         i_reg = ''
     return i_reg
+
 def check_mutation(reference, genotype):
     i_mut = ''
     if (reference == 'C') & (genotype == 'T'):
         i_mut = 'C to T deamination';
-    elif (reference == 'A') & (genotype == 'T'):
-        i_mut = 'A to T risk of strand misidentification'
-    elif (reference == 'G') & (genotype == 'C'):
-        i_mut = 'G to C risk of strand misidentification'
     elif (reference == 'G') & (genotype == 'A'):
         i_mut = 'G to A deamination'
     return i_mut
@@ -60,10 +54,10 @@ def change_to_hg38_and_annotate_positions(vcf):
 
 def generate_annotation_df(df):
     # Yleaf:
-    df_yleaf = pd.read_csv('SNP_annotations_hg38/yleaf_new_positions.txt', sep="\t", header=None)
+    df_yleaf = pd.read_csv('./SNP_annotations_hg38/yleaf_new_positions.txt', sep="\t", header=None)
     df_yleaf.columns = ['chr', 'Name', 'haplogroup', 'start', 'mutation', 'allele_anc', 'allele_der'];
     #Ybrowse:
-    df_ybrowse = pd.read_csv('SNP_annotations_hg38/ybrowse_snps_hg38.csv')[(['seqid', 'Name', 'ISOGG_haplogroup', 'start', 'mutation', 'allele_anc', 'allele_der'])];
+    df_ybrowse = pd.read_csv('./SNP_annotations_hg38/ybrowse_snps_hg38.csv')[(['seqid', 'Name', 'ISOGG_haplogroup', 'start', 'mutation', 'allele_anc', 'allele_der'])];
     df_ybrowse = df_ybrowse.rename(columns={'seqid': 'chr'});
     # We  select all the Yleaf annotated positions found in the sample 
     # and then we add the Ybrowse annotated positions that are in the sample but not in Yleaf file:
