@@ -4,8 +4,8 @@
 This application takes a .bam input in hg19 coordinates and yields a .csv with the variants annotated by SNP name, regions relevant for phylogeny and potential aDNA damages in hg38 coordinates.
 
 ## Table of contents
-* [Requirements](#requirements)
-* [Used technologies](#description)
+* [Used technologies](#requirements)
+* [Description](#description)
   * [Variant calling](#variant-calling)
   * [SNP annotation](#snp-annotation)
   * [Anciend DNA damage](#ancient-dna-damage)
