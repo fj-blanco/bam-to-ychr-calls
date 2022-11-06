@@ -66,3 +66,6 @@ def generate_annotation_df(df):
     df_int_ybrowse_no_yleaf = df_ybrowse[(df_ybrowse["start"].isin(df["start"].tolist())) & ~(df_ybrowse["start"].isin(df_int_yleaf["start"].tolist()))]
     df_anotation = pd.concat([df_int_yleaf, df_int_ybrowse_no_yleaf])
     return df_anotation
+
+if __name__ == '__main__':
+    print('This is a module')

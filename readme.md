@@ -5,7 +5,7 @@ This application takes a .bam input in hg19 coordinates and yields a .csv with t
 
 ## Table of contents
 * [Requirements](#requirements)
-* [Description](#description)
+* [Used technologies](#description)
   * [Variant calling](#variant-calling)
   * [SNP annotation](#snp-annotation)
   * [Anciend DNA damage](#ancient-dna-damage)
@@ -26,7 +26,7 @@ This application takes a .bam input in hg19 coordinates and yields a .csv with t
        * [Run the Python script](#run-the-python-script)
 * [References](#references)
 
-## Technologies used
+## Used technologies
 
 - Debian GNU/Linux 11 
 - Python 3.9.2 
