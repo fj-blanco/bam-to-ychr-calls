@@ -1,109 +1,31 @@
-import pysam
-from pysam import VariantFile
+import os
+from datetime import datetime
 import pandas as pd
-from pyliftover import LiftOver
+from pysam import VariantFile
+from functions.functions import *
 
-sample = "I13518"
-#bcf_route = "./arslantepe/" + sample + "/" + sample + "_Y"
-bcf_route = "/home/javi/Documents/genomics/samples/southern_arc/" + sample + "/" + sample + "_Y"
+sample = "sample"
+vcf_route = "./genomes/" + sample + "_Y"
+vcf = VariantFile(vcf_route + ".vcf")
 
-bcf_in = VariantFile(bcf_route + ".vcf")
+# Changing to hg38 coordinates and annotating the problematic regions and positions:
+print(datetime.now(), "Changing to hg38 coordinates and annotating the problematic regions and positions (1/3)...", flush=True)
+vc_list = change_to_hg38_and_annotate_positions(vcf)
 
-par1 = [1,2781479]
-cen = [10072350,11686750]
-dyz19 = [20054914,20351054]
-ppr = [26637971,26673210]
-par2 = [56887903,57217415]
-mutations_to_exclude = ["C to T", "A to T", "G to C", "A to G"]
+# Generating a dataframe from the .vcf file with the annotated positions:
+df = pd.DataFrame(vc_list, columns =['Position', 'Ref', 'Alt', 'Genotype', 'problematic_mutation', 'problematic_region', 'Qual'], dtype = str)
+df = df.rename(columns={'Position': 'start'})
+df = df.astype({"start": int})
 
+# Generating the annotation dataframe from the sample positions:
+print(datetime.now(), "2/3. Generating the annotation dataframe from the sample positions (2/3)...", flush=True)
+df_anotation = generate_annotation_df(df)
 
-def check_region(position):
-    if (par1[0] <= position <= par1[1]):
-        i_reg = 'par1'
-    elif (cen[0] <= position <= cen[1]):
-        i_reg = 'cen'
-    elif (dyz19[0] <= position <= dyz19[1]):
-        i_reg = 'dyz19'
-    elif (ppr[0] <= position <= ppr[1]):
-        i_reg = 'ppr'
-    elif (par2[0] <= position <= par2[1]):
-        i_reg = 'par2'
-    else:
-        i_reg = ''
-    return i_reg
-
-def check_mutation(reference, genotype):
-    i_mut = ''
-    if (reference == 'C') & (genotype == 'T'):
-        i_mut = 'C to T deamination'
-    elif (reference == 'A') & (genotype == 'T'):
-        i_mut = 'A to T risk of strand misidentification'
-    elif (reference == 'G') & (genotype == 'C'):
-        i_mut = 'G to C risk of strand misidentification'
-    elif (reference == 'G') & (genotype == 'A'):
-        i_mut = 'G to A deamination'
-    return i_mut
-
-
-convertToHG38 = True
-regionsToFilter = ['par1', 'cen', 'dyz19', 'ppr']
-mutationsToFilter = ['C to T deamination', 'A to T risk of strand misidentification', 'G to C risk of strand misidentification', 'G to A deamination']
-regions2 = ["tal"]
-# Cambiando a hg38 (sin excluir y anotando):
-vc_list = []
-lo = LiftOver('hg19', 'hg38')
-for rec in bcf_in.fetch():
-    i_pos_0 = lo.convert_coordinate('chrY', int(rec.pos))
-    if i_pos_0 != []:
-        # Anotamos las posiciones no adecuadas para filogenia:
-        i_pos = int(i_pos_0[0][1])
-        i_reg = check_region(i_pos)
-        # if i_reg not in regions2 list print i_reg:
-        if not (i_reg in regionsToFilter):
-            # Extraemos el genotipo:
-            i_gen_0 = rec.alts
-            i_ref = rec.ref
-            i_mut = ''
-            if i_gen_0 == None:
-                i_gen = i_ref
-            else:
-                i_gen = i_gen_0[0]
-                i_mut = check_mutation(i_ref, i_gen)
-            if not (i_mut in mutationsToFilter):
-                # Creamos la lista:
-                vc_list.append([i_pos, rec.ref, rec.alts, i_gen, i_mut, i_reg, rec.qual])
-                # Order:
-                #['Position', 'Ref', 'Alt', 'Genotype', 'problematic_mutation', 'problematic_region', 'Qual']
-    else:
-        vc_list.append([int(0), rec.ref, rec.alts, rec.alts, '', '', rec.qual])
-
-# Cambiando a hg38 excluyendo:
-vc_list = [];
-lo = LiftOver('hg19', 'hg38');
-for rec in bcf_in.fetch():
-    i_pos_0 = lo.convert_coordinate('chrY', int(rec.pos));
-    if i_pos_0 != []:    
-        i_pos = int(i_pos_0[0][1]);
-        if ~((par1[0] <= i_pos <= par1[1]) | (cen[0] <= i_pos <= cen[1]) | (dyz19[0] <= i_pos <= dyz19[1]) |
-           (ppr[0] <= i_pos <= ppr[1]) | (par2[0] <= i_pos <= par2[1])):
-            vc_list.append([i_pos, rec.ref, rec.alts, rec.qual]);
-    else:
-        vc_list.append([int(0), rec.ref, rec.alts, rec.qual]);
-
-
-# Sin convertir excluyendo:
-vc_list = [];
-for rec in bcf_in.fetch():
-    if rec.chrom:
-        i_pos = int(rec.pos)
-        if ~((par1[0] <= i_pos <= par1[1]) | (cen[0] <= i_pos <= cen[1]) | (dyz19[0] <= i_pos <= dyz19[1]) |
-        (ppr[0] <= i_pos <= ppr[1]) | (par2[0] <= i_pos <= par2[1])):
-            vc_list.append([i_pos, rec.ref, rec.alts, rec.qual]);
-
-
-# Sin convertir:
-vc_list = [];
-for rec in bcf_in.fetch():
-    if rec.chrom:
-        i_pos = int(rec.pos);
-        vc_list.append([i_pos, rec.ref, rec.alts, rec.qual]);
+# Mixing and saving the output:
+print(datetime.now(), "Mixing (3/3)...", flush=True)
+df_final = pd.merge(df, df_anotation, on='start')
+# Ybrowse file contains some positions with a different reference allele (perhaps bacmutations?)
+# We remove those positions:
+df_final = df_final[df_final['Ref'] == df_final['allele_anc']]
+df_final = df_final.sort_values(by=['Qual'], ascending=False)
+df_final.to_csv(vcf_route + "_annotated_" + ".csv", encoding='utf-8', index=False)
