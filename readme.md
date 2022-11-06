@@ -1,7 +1,7 @@
 
 ## Description
 
-This code performs variant calling with (BCFtools)[https://samtools.github.io/bcftools/] from a .bam genome in hg19 coordinates, keeping the ancestral positions. Then it annotates the vcf using the YLeaf and Ybrowse lists of annotated SNPs in hg38 coordinates. The change of coordinate is done with (pyliftover)[https://pypi.org/project/pyliftover/]. The result is a .csv with annotated SNPs sorted by Phred quality score.
+This code performs variant calling with [BCFtools](https://samtools.github.io/bcftools/) from a .bam genome in hg19 coordinates, keeping the ancestral positions. Then it annotates the vcf using the YLeaf and Ybrowse lists of annotated SNPs in hg38 coordinates. The change of coordinate is done with [pyliftover](https://pypi.org/project/pyliftover/). The result is a .csv with annotated SNPs sorted by Phred quality score.
 
 In the process we annotate the regions not suitable for phylogeny [as per YSEQ](https://www.yseq.net/product_info.php?products_id=108&osCsid=a46df681c44538157cf8939e4aeef532):
 
