@@ -1,6 +1,8 @@
-commands.md
 /references/
-/bam-to-ychr-calls-venv/
+/.bam-to-ychr-calls-venv/
 /genomes/
 /SNP_annotations_hg38/
 analysis.ipynb
+/results/
+/tests/
+__pycache__/

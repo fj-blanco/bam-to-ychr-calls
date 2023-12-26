@@ -1,4 +1,5 @@
 pandas==1.5.1
 pysam==0.20.0
 pyliftover==0.4
-ipykernel~=6.16.0
+pytest==7.4.0
+numpy~=1.20.3
