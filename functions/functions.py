@@ -24,6 +24,7 @@ def check_region(position):
         i_reg = ''
     return i_reg
 
+
 def check_mutation(reference, genotype):
     i_mut = ''
     if (reference == 'C') & (genotype == 'T'):
